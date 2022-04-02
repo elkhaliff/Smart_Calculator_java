@@ -1,5 +1,6 @@
 package calculator;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -12,19 +13,16 @@ public class CalcEngine {
     Pattern patternValue = Pattern.compile("([-+*/]+)\\s*(\\w+)");
     Pattern patternVariables = Pattern.compile("([a-zA-Z]+)\\s*([=])\\s*(-?\\d+)\\b+");
     Pattern patternVariablesFor = Pattern.compile("([a-zA-Z]+)\\s*([=])\\s*([a-zA-Z]+)\\b+");
-    final Map<String, Integer> variables = new HashMap<>();
+    final Map<String, BigInteger> variables = new HashMap<>();
     final Map<Integer, String> postfix = new HashMap<>();
 
     final private String unknownOperator = "Unknown operator";
+    final private String unknownVariable = "Unknown variable";
     final private String invalidIdentifier = "Invalid identifier";
     final private String invalidAssignment = "Invalid assignment";
     final private String invalidExpression = "Invalid expression";
 
     private void println(String text) {
-        System.out.println(text);
-    }
-
-    private void println(int text) {
         System.out.println(text);
     }
 
@@ -39,16 +37,16 @@ public class CalcEngine {
                 (isValue(input) || isVariables(input) || isVariablesFor(input));
     }
 
-    private Integer getValue(String input) {
+    private BigInteger getValue(String input) {
         try {
-            return Integer.parseInt(input);
+            return new BigInteger(input);
         } catch (Exception e) {
-            return (variables.containsKey(input)) ? variables.get(input) : null;
+            return variables.getOrDefault(input, null);
         }
     }
 
-    private int evaluatePostfix() {
-        var stack = new Stack<Integer>();
+    private BigInteger evaluatePostfix() {
+        var stack = new Stack<BigInteger>();
 
         for (var element: postfix.entrySet()) {
             var value = element.getValue();
@@ -59,11 +57,11 @@ public class CalcEngine {
                 var val2 = stack.pop();
 
                 switch (value) {
-                    case "+": { stack.push(val2 + val1); break; }
-                    case "-": { stack.push(val2 - val1); break; }
-                    case "*": { stack.push(val2 * val1); break; }
-                    case "/": { stack.push(val2 / val1); break; }
-                    case "^": { stack.push((int) Math.pow(val2, val1)); break; }
+                    case "+": { stack.push(val2.add(val1)); break; }
+                    case "-": { stack.push(val2.subtract(val1)); break; }
+                    case "*": { stack.push(val2.multiply(val1)); break; }
+                    case "/": { stack.push(val2.divide(val1)); break; }
+                    case "^": { stack.push(val2.pow(val1.intValue())); break; }
                     default: println(unknownOperator);
                 }
             }
@@ -76,7 +74,7 @@ public class CalcEngine {
             Matcher matcherVariables = patternVariables.matcher(input);
             while (matcherVariables.find()) {
                 var variable = matcherVariables.group(1).trim();
-                var value = Integer.parseInt(matcherVariables.group(3));
+                var value = new BigInteger(matcherVariables.group(3));
                 variables.put(variable, value);
             }
         } else if (isVariablesFor(input)) {
@@ -84,7 +82,6 @@ public class CalcEngine {
             while (matcherVariablesFor.find()) {
                 var variable = matcherVariablesFor.group(1).trim();
                 var value = matcherVariablesFor.group(3);
-                String unknownVariable = "Unknown variable";
                 if (variables.containsKey(value))
                     variables.put(variable, variables.get(value));
                 else
@@ -160,14 +157,14 @@ public class CalcEngine {
                 setVariables(input);
             else if (!isOperator(input)) {
                 try {
-                    println(getValue(input));
+                    println(getValue(input).toString());
                 } catch (Exception e) {
-                    println(invalidExpression);
+                    println(unknownVariable);
                 }
             } else {
                 infixToPostfix(input);
                 if (!postfix.isEmpty())
-                    println(evaluatePostfix());
+                    println(evaluatePostfix().toString());
             }
         } else
             println(invalidIdentifier);
