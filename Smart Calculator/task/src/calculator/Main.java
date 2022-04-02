@@ -6,24 +6,21 @@ public class Main {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        CalcEngine calcEngine = new CalcEngine();
         while (true) {
             var input = scanner.nextLine().trim();
-            if (!"".equals(input)) {
-                if ("/help".contains(input)) {
-                    System.out.println("The program calculates the sum of numbers");
-                } else if ("/exit".contains(input)) {
-                    System.out.println("Bye!");
-                    return;
+            if (!input.trim().isEmpty()) {
+                if (input.contains("/")) {
+                    if ("/help".contains(input)) {
+                        calcEngine.help();
+                    } else if ("/exit".contains(input)) {
+                        calcEngine.exit();
+                        return;
+                    } else {
+                        System.out.println("Unknown command");
+                    }
                 } else {
-                    if (input.contains(" ")) {
-                        String[] numb = input.split(" ");
-                        int sum = 0;
-                        for (String s : numb) {
-                            sum += Integer.parseInt(s);
-                        }
-                        System.out.println(sum);
-                    } else
-                        System.out.println(input);
+                    calcEngine.calc(input.trim());
                 }
             }
         }
