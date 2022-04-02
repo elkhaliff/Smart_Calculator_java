@@ -9,8 +9,8 @@ public class Main {
         CalcEngine calcEngine = new CalcEngine();
         while (true) {
             var input = scanner.nextLine().trim();
-            if (!input.trim().isEmpty()) {
-                if (input.contains("/")) {
+            if (!input.isEmpty()) {
+                if (input.startsWith("/")) {
                     if ("/help".contains(input)) {
                         calcEngine.help();
                     } else if ("/exit".contains(input)) {
@@ -20,7 +20,10 @@ public class Main {
                         System.out.println("Unknown command");
                     }
                 } else {
-                    calcEngine.calc(input.trim());
+                    input = input.replaceAll("\\s+", "")
+                            .replaceAll("\\+\\++|(--)+", "+")
+                            .replaceAll("\\+-", "-");
+                    calcEngine.calc(input);
                 }
             }
         }
